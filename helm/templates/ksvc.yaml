@@ -1,10 +1,12 @@
----
-
 {{- if .Values.knativeDeploy }}
 apiVersion: serving.knative.dev/v1alpha1
 kind: Service
 metadata:
+{{- if .Values.service.name }}
+  name: {{ .Values.service.name }}
+{{- else }}
   name: {{ template "fullname" . }}
+{{- end }}
   labels:
     chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
 spec:
@@ -17,17 +19,17 @@ spec:
             imagePullPolicy: {{ .Values.image.pullPolicy }}
             livenessProbe:
               httpGet:
-                path: /
-              initialDelaySeconds: 60
-              periodSeconds: 10
-              successThreshold: 1
-              timeoutSeconds: 1
+                path: {{ .Values.probePath }}
+              initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
+              periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
+              successThreshold: {{ .Values.livenessProbe.successThreshold }}
+              timeoutSeconds: {{ .Values.livenessProbe.timeoutSeconds }}
             readinessProbe:
               httpGet:
-                path: /
-              periodSeconds: 10
-              successThreshold: 1
-              timeoutSeconds: 1
+                path: {{ .Values.probePath }}
+              periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
+              successThreshold: {{ .Values.readinessProbe.successThreshold }}
+              timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds }}
             resources:
 {{ toYaml .Values.resources | indent 14 }}
 {{- end }}
